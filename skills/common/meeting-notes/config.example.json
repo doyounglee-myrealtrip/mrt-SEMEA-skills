@@ -9,12 +9,16 @@
   },
 
   "slack": {
-    "bot_token": "여기에_Slack_Bot_토큰",
-    "my_user_id": "여기에_본인_Slack_유저_ID"
+    "client_id": "여기에_Slack_앱_Client_ID",
+    "client_secret": "여기에_Slack_앱_Client_Secret",
+    "bot_token": "",
+    "my_user_id": ""
   },
 
   "caret": {
     "api_key": "여기에_Caret_API_키",
     "webhook_secret": "여기에_Webhook_시크릿_키"
-  }
+  },
+
+  "anthropic_api_key": "여기에_Anthropic_API_키"
 }
