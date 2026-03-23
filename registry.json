@@ -1,0 +1,14 @@
+{
+  "updated_at": "2026-03-23",
+  "skills": [
+    {
+      "name": "code-review",
+      "path": "engineering/code-review",
+      "category": "engineering",
+      "description": "PR 코드 리뷰를 보안/성능/가독성 기준으로 도와주는 스킬",
+      "version": "1.0.0",
+      "author": "doyoung",
+      "tags": ["code-review", "PR", "quality"]
+    }
+  ]
+}

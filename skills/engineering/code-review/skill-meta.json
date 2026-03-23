@@ -1,0 +1,14 @@
+{
+  "version": "1.0.0",
+  "author": "doyoung",
+  "category": "engineering",
+  "tags": ["code-review", "PR", "quality"],
+  "description": "PR 코드 리뷰를 보안/성능/가독성 기준으로 도와주는 스킬",
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-03-23",
+      "changes": "첫 번째 배포"
+    }
+  ]
+}

@@ -1,0 +1,183 @@
+#!/usr/bin/env bash
+# MRT Claude Skills CLI
+# 마이리얼트립 Claude 스킬 마켓플레이스 설치 도구
+
+set -e
+
+REPO="doyounglee-myrealtrip/mrt-claude-skills"
+SKILLS_DIR="$HOME/.claude/skills/mrt"
+REGISTRY_URL="https://raw.githubusercontent.com/$REPO/main/registry.json"
+BASE_URL="https://raw.githubusercontent.com/$REPO/main/skills"
+
+# 색상 출력 헬퍼
+green() { echo -e "\033[32m$1\033[0m"; }
+yellow() { echo -e "\033[33m$1\033[0m"; }
+red() { echo -e "\033[31m$1\033[0m"; }
+bold() { echo -e "\033[1m$1\033[0m"; }
+
+# registry.json 가져오기
+fetch_registry() {
+  curl -fsSL "$REGISTRY_URL" 2>/dev/null || { red "❌ registry.json을 가져올 수 없어요. 인터넷 연결을 확인해주세요."; exit 1; }
+}
+
+# 명령어: list
+cmd_list() {
+  local category="$1"
+  bold "\n📦 MRT Claude Skills 목록\n"
+
+  local registry
+  registry=$(fetch_registry)
+
+  echo "$registry" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+category_filter = '$category'
+
+skills = data['skills']
+if category_filter:
+    skills = [s for s in skills if s['category'] == category_filter]
+
+if not skills:
+    print('  스킬이 없어요.')
+else:
+    by_cat = {}
+    for s in skills:
+        by_cat.setdefault(s['category'], []).append(s)
+    for cat, items in sorted(by_cat.items()):
+        print(f'\n  [{cat}]')
+        for s in items:
+            tags = ', '.join(s.get('tags', []))
+            print(f'    • {s[\"name\"]:25} v{s[\"version\"]:8} {s[\"description\"]}')
+            if tags:
+                print(f'      태그: {tags}')
+print()
+"
+}
+
+# 명령어: install
+cmd_install() {
+  local skill_name="$1"
+  if [ -z "$skill_name" ]; then
+    red "사용법: mrt-skill install <스킬이름>"
+    exit 1
+  fi
+
+  local registry
+  registry=$(fetch_registry)
+
+  # 스킬 경로 찾기
+  local skill_path
+  skill_path=$(echo "$registry" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+name = '$skill_name'
+for s in data['skills']:
+    if s['name'] == name:
+        print(s['path'])
+        break
+")
+
+  if [ -z "$skill_path" ]; then
+    red "❌ '$skill_name' 스킬을 찾을 수 없어요."
+    yellow "  mrt-skill list 로 사용 가능한 스킬을 확인해보세요."
+    exit 1
+  fi
+
+  local install_dir="$SKILLS_DIR/$skill_name"
+  mkdir -p "$install_dir"
+
+  yellow "⬇️  '$skill_name' 설치 중..."
+
+  # SKILL.md 다운로드
+  curl -fsSL "$BASE_URL/$skill_path/SKILL.md" -o "$install_dir/SKILL.md" || {
+    red "❌ SKILL.md 다운로드 실패"
+    exit 1
+  }
+
+  # skill-meta.json 다운로드
+  curl -fsSL "$BASE_URL/$skill_path/skill-meta.json" -o "$install_dir/skill-meta.json" 2>/dev/null || true
+
+  green "✅ '$skill_name' 설치 완료! → $install_dir"
+  echo ""
+  yellow "💡 Claude Code에서 /skill $skill_name 으로 사용하세요."
+}
+
+# 명령어: update
+cmd_update() {
+  local skill_name="$1"
+  if [ -z "$skill_name" ]; then
+    red "사용법: mrt-skill update <스킬이름>"
+    exit 1
+  fi
+
+  local install_dir="$SKILLS_DIR/$skill_name"
+  if [ ! -d "$install_dir" ]; then
+    red "❌ '$skill_name'이 설치되어 있지 않아요."
+    yellow "  mrt-skill install $skill_name 으로 먼저 설치해주세요."
+    exit 1
+  fi
+
+  yellow "🔄 '$skill_name' 업데이트 중..."
+  cmd_install "$skill_name"
+  green "✅ '$skill_name' 업데이트 완료!"
+}
+
+# 명령어: info
+cmd_info() {
+  local skill_name="$1"
+  if [ -z "$skill_name" ]; then
+    red "사용법: mrt-skill info <스킬이름>"
+    exit 1
+  fi
+
+  local registry
+  registry=$(fetch_registry)
+
+  echo "$registry" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+name = '$skill_name'
+for s in data['skills']:
+    if s['name'] == name:
+        print(f'''
+  이름:        {s['name']}
+  카테고리:    {s['category']}
+  버전:        {s['version']}
+  작성자:      {s['author']}
+  설명:        {s['description']}
+  태그:        {', '.join(s.get('tags', []))}
+''')
+        break
+else:
+    print(f\"  '{name}' 스킬을 찾을 수 없어요.\")
+"
+}
+
+# 메인
+case "$1" in
+  list)
+    shift
+    category=""
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --category) category="$2"; shift 2 ;;
+        *) shift ;;
+      esac
+    done
+    cmd_list "$category"
+    ;;
+  install)   cmd_install "$2" ;;
+  update)    cmd_update "$2" ;;
+  info)      cmd_info "$2" ;;
+  *)
+    bold "\n🛠️  MRT Claude Skills CLI\n"
+    echo "  사용법: mrt-skill <명령어>"
+    echo ""
+    echo "  명령어:"
+    echo "    list [--category <카테고리>]   스킬 목록 보기"
+    echo "    install <스킬이름>              스킬 설치"
+    echo "    update  <스킬이름>              스킬 업데이트"
+    echo "    info    <스킬이름>              스킬 상세 정보"
+    echo ""
+    ;;
+esac
