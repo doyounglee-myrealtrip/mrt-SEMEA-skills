@@ -1,0 +1,6 @@
+# 절대 GitHub에 올라가면 안 되는 파일들
+config.json
+*.env
+.env*
+__pycache__/
+*.pyc

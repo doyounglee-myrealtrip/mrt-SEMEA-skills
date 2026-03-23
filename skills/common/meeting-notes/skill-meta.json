@@ -1,0 +1,14 @@
+{
+  "version": "1.0.0",
+  "author": "doyoung",
+  "category": "common",
+  "tags": ["meeting", "confluence", "slack", "caret", "자동화"],
+  "description": "Caret 녹취록 → 요약 → Confluence 자동 작성 → Slack DM 전송",
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-03-23",
+      "changes": "첫 번째 배포"
+    }
+  ]
+}

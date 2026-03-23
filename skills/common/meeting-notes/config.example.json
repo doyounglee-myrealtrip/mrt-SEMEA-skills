@@ -1,0 +1,20 @@
+{
+  "_comment": "이 파일을 config.json으로 복사하고 실제 값을 채워주세요. config.json은 절대 GitHub에 올리지 마세요!",
+
+  "confluence": {
+    "base_url": "https://your-domain.atlassian.net",
+    "username": "your-email@myrealtrip.com",
+    "api_token": "여기에_Confluence_API_토큰",
+    "space_key": "~your-username"
+  },
+
+  "slack": {
+    "bot_token": "여기에_Slack_Bot_토큰",
+    "my_user_id": "여기에_본인_Slack_유저_ID"
+  },
+
+  "caret": {
+    "api_key": "여기에_Caret_API_키",
+    "webhook_secret": "여기에_Webhook_시크릿_키"
+  }
+}
