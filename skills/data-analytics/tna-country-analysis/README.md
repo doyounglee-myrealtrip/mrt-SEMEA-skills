@@ -12,6 +12,49 @@
 
 ---
 
+## 시작하기
+
+### 전제 조건
+
+이 스킬을 사용하려면 아래 3가지가 준비되어 있어야 합니다.
+
+| # | 필요한 것 | 왜 필요한가 | 확인 방법 |
+|---|----------|-----------|----------|
+| 1 | **Claude Code** | 스킬을 실행하는 AI 코딩 에이전트 | 터미널에서 `claude` 입력 시 실행되면 OK |
+| 2 | **BigQuery 접근 권한** (gcloud 인증) | 데이터 분석을 위해 BigQuery에 쿼리를 실행 | `bq query --use_legacy_sql=false "SELECT 1"` 실행 시 결과가 나오면 OK |
+| 3 | **Confluence MCP 플러그인** | 분석 결과 보고서를 Confluence에 자동 발행 | Claude Code에서 `/mcp` 입력 후 Atlassian 항목이 보이면 OK |
+
+> 아직 준비가 안 되어 있다면? Claude Code를 열고 "초기 세팅해줘"라고 말하면 자동으로 설치/인증을 진행합니다.
+
+### 설치 방법
+
+#### 방법 1: mrt-skill CLI (추천)
+
+```bash
+mrt-skill install tna-country-analysis
+```
+
+#### 방법 2: 수동 설치
+
+```bash
+# 1. 스킬 디렉토리 생성
+mkdir -p .claude/skills/tna-country-analysis
+
+# 2. SKILL.md 다운로드
+curl -fsSL https://raw.githubusercontent.com/doyounglee-myrealtrip/mrt-SEMEA-skills/main/skills/data-analytics/tna-country-analysis/SKILL.md \
+  -o .claude/skills/tna-country-analysis/SKILL.md
+```
+
+### 설치 확인
+
+Claude Code를 열고 아래처럼 입력하면 스킬이 동작합니다:
+
+```
+/tna-country-analysis 스페인
+```
+
+---
+
 ## 이 스킬은 무엇을 하나요?
 
 여행 T&A(투어·티켓·액티비티) 사업에서 **"이 나라의 공헌이익을 어떻게 늘릴 수 있을까?"** 라는 질문에 답합니다.
