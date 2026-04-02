@@ -1,13 +1,16 @@
-# T&A 국가별 공헌이익 종합 분석
+# T&A 도시별 공헌이익 종합 분석
 
-> 국가명 하나만 입력하면, 해당 국가의 T&A 공헌이익을 **퍼널 6단계 × 도시 × 카테고리 × 상품** 레벨로 자동 진단하고, 문제와 해결 방향까지 도출합니다.
+> 국가명 또는 도시명을 입력하면, 해당 지역의 T&A 공헌이익을 **도시별 × 퍼널 6단계 × 카테고리 × 상품** 레벨로 자동 진단하고, 문제와 해결 방향까지 도출합니다.
+>
+> **핵심 원칙: 모든 분석은 도시 레벨로 수행됩니다.** 국가명 입력은 "해당 국가의 Top 5 도시를 자동 식별"하기 위한 편의 기능입니다.
 
 ---
 
 ## 한 줄 요약
 
 ```
-/tna-country-analysis 스페인  →  3단계 분석 자동 실행  →  Confluence 보고서 발행
+/tna-country-analysis 스페인      →  Top 5 도시 자동 식별  →  도시별 분석  →  Confluence 보고서
+/tna-country-analysis Barcelona   →  해당 도시만 분석  →  Confluence 보고서
 ```
 
 ---
@@ -57,7 +60,7 @@ Claude Code를 열고 아래처럼 입력하면 스킬이 동작합니다:
 
 ## 이 스킬은 무엇을 하나요?
 
-여행 T&A(투어·티켓·액티비티) 사업에서 **"이 나라의 공헌이익을 어떻게 늘릴 수 있을까?"** 라는 질문에 답합니다.
+여행 T&A(투어·티켓·액티비티) 사업에서 **"이 도시의 공헌이익을 어떻게 늘릴 수 있을까?"** 라는 질문에 답합니다.
 
 공헌이익에 영향을 주는 6가지 요소를 하나하나 진단하고, 문제가 있는 곳을 **도시 → 카테고리 → 개별 상품** 순서로 파고들어 원인을 특정합니다.
 
@@ -85,15 +88,22 @@ Claude Code를 열고 아래처럼 입력하면 스킬이 동작합니다:
 
 ## 사용법
 
-### 기본 사용
+### 국가명으로 입력 (Top 5 도시 자동 식별)
 
 ```
-/tna-country-analysis 스페인
-/tna-country-analysis 일본
-/tna-country-analysis Thailand
+/tna-country-analysis 스페인       → Barcelona, Seville, Madrid, Granada, Majorca 자동 분석
+/tna-country-analysis 일본         → Tokyo, Osaka, Kyoto, Fukuoka, ... 자동 분석
+/tna-country-analysis Thailand     → Bangkok, Chiang Mai, Phuket, ... 자동 분석
 ```
 
-한글과 영문 모두 입력 가능합니다. 한글 입력 시 자동으로 BigQuery의 영문 국가명으로 매핑됩니다.
+### 도시명으로 입력 (해당 도시만 분석)
+
+```
+/tna-country-analysis Barcelona    → Barcelona 한 도시만 심층 분석
+/tna-country-analysis 리스본        → Lisbon 한 도시만 심층 분석
+```
+
+한글과 영문 모두 입력 가능합니다. 한글 입력 시 자동으로 BigQuery의 영문 국가명/도시명으로 매핑됩니다.
 
 ### 지원 국가 (한글 매핑)
 
@@ -224,7 +234,7 @@ Level 1: 도시              "Barcelona에서 문제가 있다"
 이 스킬은 T&A(투어/티켓/액티비티) 전용입니다. 숙박/항공은 데이터 구조와 퍼널이 다르므로 별도 스킬이 필요합니다.
 
 ### Q: 특정 도시만 분석하고 싶으면?
-현재는 국가 단위로 Top 5 도시를 자동 선정합니다. 특정 도시만 보고 싶으면 스킬 실행 후 "Barcelona만 자세히 봐줘" 같이 추가 요청하면 됩니다.
+도시명을 직접 입력하면 됩니다: `/tna-country-analysis Barcelona`, `/tna-country-analysis 리스본`. 해당 도시만 심층 분석합니다.
 
 ### Q: 광고비 데이터가 해당 국가에 없으면?
 `mkt_dashboard_raw_data`에 국가 필터가 없는 경우 T&A 전체 기준으로 분석하되, 스페인 한정이 아님을 보고서에 명시합니다.
