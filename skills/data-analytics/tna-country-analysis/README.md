@@ -91,19 +91,56 @@ Claude Code를 열고 아래처럼 입력하면 스킬이 동작합니다:
 ### 국가명으로 입력 (Top 5 도시 자동 식별)
 
 ```
-/tna-country-analysis 스페인       → Barcelona, Seville, Madrid, Granada, Majorca 자동 분석
-/tna-country-analysis 일본         → Tokyo, Osaka, Kyoto, Fukuoka, ... 자동 분석
-/tna-country-analysis Thailand     → Bangkok, Chiang Mai, Phuket, ... 자동 분석
+/tna-country-analysis 스페인       → Barcelona, Seville, Madrid 등 Top 5 도시 자동 분석
+/tna-country-analysis Spain        → 위와 동일
+/tna-country-analysis 일본         → Tokyo, Osaka, Kyoto 등 Top 5 도시 자동 분석
+/tna-country-analysis Japan        → 위와 동일
 ```
 
 ### 도시명으로 입력 (해당 도시만 분석)
 
 ```
-/tna-country-analysis Barcelona    → Barcelona 한 도시만 심층 분석
+/tna-country-analysis 바르셀로나    → Barcelona 한 도시만 심층 분석
+/tna-country-analysis Barcelona    → 위와 동일
 /tna-country-analysis 리스본        → Lisbon 한 도시만 심층 분석
+/tna-country-analysis Lisbon       → 위와 동일
 ```
 
-한글과 영문 모두 입력 가능합니다. 한글 입력 시 자동으로 BigQuery의 영문 국가명/도시명으로 매핑됩니다.
+> **국문/영문 모두 입력 가능합니다.** 한글로 입력하면 자동으로 BigQuery의 영문 국가명/도시명으로 매핑됩니다. 영문으로 입력해도 됩니다. 편한 쪽으로 쓰세요!
+
+### 한글 매핑 지원 목록
+
+#### 국가
+
+| 한글 | 영문 | | 한글 | 영문 |
+|------|------|-|------|------|
+| 스페인 | Spain | | 프랑스 | France |
+| 일본 | Japan | | 이탈리아 | Italy |
+| 태국 | Thailand | | 영국 | United Kingdom |
+| 베트남 | Viet Nam | | 터키 | Turkey |
+| 대만 | Taiwan | | 크로아티아 | Croatia |
+| 싱가포르 | Singapore | | 포르투갈 | Portugal |
+| 홍콩 | Hong Kong | | 그리스 | Greece |
+| 호주 | Australia | | 체코 | Czech Republic |
+| 미국 | United States | | 헝가리 | Hungary |
+| 인도네시아 | Indonesia | | 모로코 | Morocco |
+
+#### 주요 도시
+
+| 한글 | 영문 | | 한글 | 영문 |
+|------|------|-|------|------|
+| 바르셀로나 | Barcelona | | 리스본 | Lisbon |
+| 마드리드 | Madrid | | 포르투 | Porto |
+| 세비야 | Seville | | 파리 | Paris |
+| 그라나다 | Granada | | 로마 | Rome |
+| 마요르카 | Majorca | | 도쿄 | Tokyo |
+| 방콕 | Bangkok | | 오사카 | Osaka |
+| 하노이 | Hanoi | | 교토 | Kyoto |
+| 호치민 | Ho Chi Minh | | 프라하 | Prague |
+| 이스탄불 | Istanbul | | 부다페스트 | Budapest |
+| 두브로브니크 | Dubrovnik | | 아테네 | Athens |
+
+위 목록에 없는 국가/도시도 영문으로 입력하면 BigQuery에서 자동 검색합니다.
 
 ### 지원 국가 (한글 매핑)
 
