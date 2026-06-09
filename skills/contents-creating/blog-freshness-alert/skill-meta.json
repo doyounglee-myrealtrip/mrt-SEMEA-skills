@@ -1,10 +1,15 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "jiwoo",
   "category": "contents-creating",
   "tags": ["blog", "monitoring", "alert", "freshness", "SEMEA", "slack"],
-  "description": "담당 도시별 마리트 블로그 콘텐츠 신선도 점검 + Slack 알럿. 기존 글 현황과 신규 주제 제안을 함께 전송.",
+  "description": "담당 도시·카테고리별 마리트 블로그 콘텐츠 현황 점검 + Slack 알럿. 최근 1년 이내 글 유무 확인, 기존 글 현황과 신규 주제 제안을 함께 전송.",
   "changelog": [
+    {
+      "version": "1.1.0",
+      "date": "2026-06-09",
+      "changes": "도시 목록 전면 개편 (스페인 5개, 포르투갈 2개, 튀르키예 2개, 그리스 2개, 이집트 2개, 중동, 아프리카) + 카테고리 추가 (스페인 축구, 순례길, 허니문) + 알럿 기준 1년으로 단순화"
+    },
     {
       "version": "1.0.0",
       "date": "2026-06-09",
