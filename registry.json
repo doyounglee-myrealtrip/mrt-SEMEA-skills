@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-04-07",
+  "updated_at": "2026-06-09",
   "skills": [
     {
       "name": "code-review",
@@ -36,6 +36,15 @@
       "version": "1.0.0",
       "author": "doyoung",
       "tags": ["naver-blog", "GEO", "AEO", "SEO", "여행", "콘텐츠"]
+    },
+    {
+      "name": "blog-freshness-alert",
+      "path": "contents-creating/blog-freshness-alert",
+      "category": "contents-creating",
+      "description": "담당 도시별 마리트 블로그 콘텐츠 신선도 점검 + Slack 알럿. 기존 글 현황과 신규 주제 제안을 함께 전송.",
+      "version": "1.0.0",
+      "author": "jiwoo",
+      "tags": ["blog", "monitoring", "alert", "freshness", "SEMEA", "slack"]
     }
   ]
 }

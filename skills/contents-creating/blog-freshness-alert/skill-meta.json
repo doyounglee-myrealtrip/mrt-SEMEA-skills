@@ -1,0 +1,14 @@
+{
+  "version": "1.0.0",
+  "author": "jiwoo",
+  "category": "contents-creating",
+  "tags": ["blog", "monitoring", "alert", "freshness", "SEMEA", "slack"],
+  "description": "담당 도시별 마리트 블로그 콘텐츠 신선도 점검 + Slack 알럿. 기존 글 현황과 신규 주제 제안을 함께 전송.",
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-06-09",
+      "changes": "첫 번째 배포 — 도시별 블로그 검색, 신선도 판정, 주제 제안, Slack 알럿"
+    }
+  ]
+}
