@@ -1,10 +1,15 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "author": "jiwoo",
   "category": "contents-creating",
-  "tags": ["blog", "monitoring", "alert", "freshness", "SEMEA", "slack"],
-  "description": "담당 도시·카테고리별 마리트 블로그 콘텐츠 현황 점검 + Slack 알럿. 최근 1년 이내 글 유무 확인, 기존 글 현황과 신규 주제 제안을 함께 전송.",
+  "tags": ["blog", "monitoring", "alert", "freshness", "SEMEA", "slack", "naver"],
+  "description": "담당 도시·카테고리별 마리트 네이버 블로그 콘텐츠 현황 점검 + Slack 알럿. RSS 피드 기반 수집, 최근 1년 이내 글 유무 확인, 기존 글 현황과 신규 주제 제안을 함께 전송.",
   "changelog": [
+    {
+      "version": "1.2.0",
+      "date": "2026-06-10",
+      "changes": "블로그 소스를 blog.myrealtrip.com에서 blog.naver.com/myrealtrip 네이버 공식 블로그로 변경. WebSearch 대신 Python RSS 기반 수집 방식 적용 (rss.blog.naver.com/myrealtrip.xml). RSS 피드 제약(최근 50개) 문서화. allowed-tools에 Bash 추가."
+    },
     {
       "version": "1.1.0",
       "date": "2026-06-09",

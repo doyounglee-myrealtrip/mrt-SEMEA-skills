@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-06-09",
+  "updated_at": "2026-06-10",
   "skills": [
     {
       "name": "code-review",
@@ -41,10 +41,10 @@
       "name": "blog-freshness-alert",
       "path": "contents-creating/blog-freshness-alert",
       "category": "contents-creating",
-      "description": "담당 도시·카테고리별 마리트 블로그 콘텐츠 현황 점검 + Slack 알럿. 최근 1년 이내 글 유무 확인, 기존 글 현황과 신규 주제 제안을 함께 전송.",
-      "version": "1.1.0",
+      "description": "담당 도시·카테고리별 마리트 네이버 블로그 콘텐츠 현황 점검 + Slack 알럿. RSS 피드 기반 수집, 최근 1년 이내 글 유무 확인, 기존 글 현황과 신규 주제 제안을 함께 전송.",
+      "version": "1.2.0",
       "author": "jiwoo",
-      "tags": ["blog", "monitoring", "alert", "freshness", "SEMEA", "slack"]
+      "tags": ["blog", "monitoring", "alert", "freshness", "SEMEA", "slack", "naver"]
     }
   ]
 }
