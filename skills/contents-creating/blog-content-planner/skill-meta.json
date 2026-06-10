@@ -1,0 +1,14 @@
+{
+  "version": "1.0.0",
+  "author": "jiwoo",
+  "category": "contents-creating",
+  "tags": ["blog", "SEMEA", "naver", "GEO", "content-planning", "slack"],
+  "description": "SEMEA 팀 블로그 신선도 점검 + 주제 제안 + Slack 캔버스 업데이트 + GEO/AEO 최적화 블로그 자동 작성",
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-06-10",
+      "changes": "첫 번째 릴리즈: 신선도 스캔, 주제 제안, Slack 캔버스 업데이트, 블로그 작성, 해시태그, Unsplash 이미지"
+    }
+  ]
+}
