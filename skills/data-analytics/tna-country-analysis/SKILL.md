@@ -124,9 +124,9 @@ Level 1: 도시 (CITY_NM)            ← Phase 1
 
 ### 시간축
 
-- 모든 비교는 **YoY(전년 동기 대비)** 기준
+- 비교 기준은 **Phase 0.5에서 사용자와 먼저 확정**한다 (YoY 단독 고정 금지). 기본 후보는 YoY(전년 동월)·MoM(직전월)·직전 피크 대비·마진율(CMR) 추세. 공헌이익이 YoY로는 늘었는데 마진율만 빠지는 케이스가 흔하므로, 한 축만 보면 "감소"를 놓친다.
 - 시즌은 **도시별 주문건수** 기준으로 독립 분류 (월평균 ± 0.5σ)
-- 분석 기간: 최근 24개월 (오늘 기준 2년)
+- 분석 기간: 최근 24개월 (오늘 기준 2년). 단, 사용자가 특정 기간을 지정하면 그 기간을 우선한다.
 
 ### 유입 경로 분석 (추가 차원)
 
@@ -159,6 +159,22 @@ WHERE COUNTRY_NM = '{COUNTRY}' AND FPNA_DOMAIN_NM = 'TNA'
   AND BASIS_DATE >= DATE_SUB(CURRENT_DATE(), INTERVAL 12 MONTH)
 GROUP BY 1 ORDER BY 2 DESC LIMIT 5
 ```
+
+---
+
+### Phase 0.5: 분석 전 얼라인 (비교기준·배경) — 필수
+
+본 분석에 들어가기 전에 **결과를 바꾸는 축을 사용자와 먼저 맞춘다.** 공헌이익은 YoY로는 늘었는데 마진율(CMR)만 빠지는 식으로 "감소"의 정의에 따라 결론이 정반대가 되기 때문이다. Phase 0에서 데이터 존재·Top 5 도시·최근 추이를 빠르게 확인한 뒤, 아래를 1회 정렬한다.
+
+| 맞출 축 | 후보 | 비고 |
+|--------|------|------|
+| **비교 기준** | YoY(전년 동월) / MoM(직전월) / 직전 피크 대비 / 마진율(CMR) 추세 | YoY 단독으로 고정하지 않는다. 여러 축을 동시에 보겠다고 해도 됨 |
+| **분석 기간** | 최근 24개월(기본) / 특정 기간 지정 | 미완료 당월은 MTD/부분월로 표시하고 결론은 완료월 중심 |
+| **배경/의도** | 수익성 방어·개선 액션 / 이상 징후 점검 / 리포트용 | 원인 분석이라 배경에 따라 보는 각도가 달라짐 |
+
+- Phase 0에서 최근 12~18개월 월별 CM·CMR·주문수 추이를 먼저 뽑아 **"실제로 어디서, 어떤 기준으로 빠졌는지"를 근거로 제시**한 뒤 위 축을 묻는다. 빈손으로 묻지 않는다.
+- 사용자가 `알아서 해줘`면 가장 보수적인 기준(YoY + MoM 병행, CMR 추세 포함)으로 진행하고 응답 상단에 사용한 기준을 명시한다.
+- 범위는 이 스킬 기준 T&A 고정. 리셀마켓·B2B·마이팩(PKG)·패키지(PKC) 포함 여부가 결과를 바꾸면 그때만 추가로 확인한다.
 
 ---
 
@@ -225,10 +241,46 @@ GROUP BY 1, 2 ORDER BY uv_pid DESC
 
 **도시별로** 주문건수, GMV, CGMV, 공헌이익, CPD, 채널수수료 YoY 비교. 국가 전체 합산은 참고용으로만 부기하고, 주 분석 단위는 도시.
 
+#### 1-4. 공헌이익(CM) 드라이버 분해 — 필수
+
+지표를 나열만 하지 않고, **CM 변화가 어느 드라이버에서 나왔는지 정량 분해**한다. 곱셈 분해식:
+
+```
+CM = 주문수 × AOV(객단가) × CFR(확정률) × CMR(마진율)
+  ※ AOV = GMV / 주문수,  CFR = CGMV / GMV,  CMR = CON_MARGIN / CGMV
+  ※ 위 4개를 곱하면 CON_MARGIN 으로 환원됨
+```
+
+로그 분해로 각 드라이버의 기여도를 %p 단위로 산출한다 (`Δlog(CM) = Δlog(주문) + Δlog(AOV) + Δlog(CFR) + Δlog(CMR)`). Phase 0.5에서 정한 비교 기준(MoM·YoY)별로 각각 분해한다.
+
+```sql
+-- 드라이버 분해용 월별 집계 (이후 분해는 결과 위에서 계산)
+SELECT
+  FORMAT_DATE('%Y-%m', BASIS_DATE) AS month,
+  COUNT(DISTINCT ORDER_ID) AS order_cnt,
+  SAFE_DIVIDE(SUM(GMV), COUNT(DISTINCT ORDER_ID)) AS aov,
+  SAFE_DIVIDE(SUM(CASE WHEN RECENT_STATUS IN ('confirm','finish') THEN GMV ELSE 0 END), SUM(GMV)) AS cfr,
+  SAFE_DIVIDE(
+    SUM(CASE WHEN RECENT_STATUS IN ('confirm','finish') THEN CON_MARGIN ELSE 0 END),
+    SUM(CASE WHEN RECENT_STATUS IN ('confirm','finish') THEN GMV ELSE 0 END)
+  ) AS cmr,
+  SUM(CASE WHEN RECENT_STATUS IN ('confirm','finish') THEN CON_MARGIN ELSE 0 END) AS con_margin
+FROM mrtdata.edw_fpna.MART_FPNA_NONAIR_PROFIT_D
+WHERE COUNTRY_NM = '{COUNTRY}' AND FPNA_DOMAIN_NM = 'TNA'
+  AND CITY_NM = '{TARGET_CITY}'
+  AND STANDARD_CATEGORY_LV_1_CD IN ('TOUR','TICKET','ACTIVITY','CLASS','CONVENIENCE','SNAP')
+  AND BASIS_DATE BETWEEN '{START}' AND '{END}'
+GROUP BY 1 ORDER BY 1
+```
+
+- 산출물은 "월 × 드라이버(주문/AOV/CFR/CMR) 기여도 %p" 표. 어느 드라이버가 CM 변화를 주도/상쇄했는지 한 줄 진단.
+- **자주 나오는 패턴**: AOV 상승이 CMR·주문 하락을 덮어 CM은 YoY 유지 → 겉으로는 멀쩡해 보여도 수익성 펀더멘털이 약해지는 신호. 이 경우 Phase 2에서 CMR(쿠폰)·AOV(단가/믹스)·CVR을 우선 드릴다운한다.
+
 #### Phase 1 산출물
 
 - 도시별 시즌 비교표 (월 × 도시 매트릭스)
-- **퍼널 6단계 도시별 YoY 종합 표** (도시별 독립 진단이 핵심)
+- **퍼널 6단계 도시별 종합 표** (Phase 0.5에서 정한 비교 기준으로, 도시별 독립 진단이 핵심)
+- **CM 드라이버 기여도 분해 표** (주문/AOV/CFR/CMR %p) + 한 줄 진단
 - 도시별 한 줄 진단 (UV↑/CVR↓ 등)
 - 문제 신호 목록 (심각도 + **도시** + 상세)
 
@@ -242,10 +294,12 @@ Phase 1에서 식별된 문제 신호를 기반으로, **문제가 있는 도시
 
 | 신호 | 드릴다운 |
 |------|---------|
-| CVR 하락 도시 | 해당 도시의 카테고리별 UV/CVR + UTM별 CVR |
+| CVR 하락 도시 | 해당 도시의 카테고리별 UV/CVR + UTM별 CVR + 체크아웃 퍼널 단계 이탈(상세→체크아웃→결제) |
 | 주문 역성장 도시 | 카테고리별 주문건수 YoY + UV vs CVR 분해 |
 | CFR 하락 도시 | 카테고리별 CFR + 성수기 vs 비수기 + 취소 TOP 상품(L3) |
-| CPD 급증 | 도시 × 카테고리별 CPD YoY + 월별 추이 |
+| **CMR(마진율) 하락 도시** | 카테고리(LV2)별 CMR + CPD/CGMV 비중 → **GID·쿠폰ID 레벨 쿠폰 누수 추적** (아래 템플릿) |
+| CPD 급증 | 도시 × 카테고리별 CPD YoY + 월별 추이 + GID·쿠폰ID 분해 |
+| **AOV 급변 도시** | AOV shift-share 분해(단가효과 vs 믹스효과) + 단가 인상 Top GID + 가격저항 신호 (아래 템플릿) |
 
 #### 핵심 쿼리 템플릿
 
@@ -292,12 +346,83 @@ WHERE COUNTRY_NM = '{COUNTRY}' AND FPNA_DOMAIN_NM = 'TNA' AND CITY_NM = '{TARGET
 GROUP BY 1, 2, 3, 4 HAVING order_cnt >= 5 ORDER BY cancelled_gmv DESC LIMIT 20
 ```
 
+**마진율(CMR) 하락 → GID·쿠폰ID 누수 추적** (CMR 하락 신호가 잡힌 도시·카테고리):
+```sql
+-- 1단계: LV2 카테고리별 CMR·CPD 비중으로 누수 카테고리 특정
+SELECT FORMAT_DATE('%Y-%m', BASIS_DATE) AS month, STANDARD_CATEGORY_LV_2_CD AS lv2,
+  ROUND(SUM(CASE WHEN RECENT_STATUS IN ('confirm','finish') THEN GMV ELSE 0 END)/1e8, 3) AS cgmv_eok,
+  ROUND(SAFE_DIVIDE(SUM(CASE WHEN RECENT_STATUS IN ('confirm','finish') THEN CON_MARGIN ELSE 0 END),
+                    SUM(CASE WHEN RECENT_STATUS IN ('confirm','finish') THEN GMV ELSE 0 END))*100, 2) AS cmr_pct,
+  ROUND(SAFE_DIVIDE(SUM(CASE WHEN RECENT_STATUS IN ('confirm','finish') THEN CPD_AMOUNT ELSE 0 END),
+                    SUM(CASE WHEN RECENT_STATUS IN ('confirm','finish') THEN GMV ELSE 0 END))*100, 2) AS cpd_ratio_pct
+FROM mrtdata.edw_fpna.MART_FPNA_NONAIR_PROFIT_D
+WHERE COUNTRY_NM = '{COUNTRY}' AND FPNA_DOMAIN_NM = 'TNA' AND CITY_NM = '{TARGET_CITY}'
+  AND STANDARD_CATEGORY_LV_1_CD IN ('TOUR','TICKET','ACTIVITY','CLASS','CONVENIENCE','SNAP')
+  AND BASIS_DATE BETWEEN '{PRIOR_START}' AND '{CURRENT_END}'
+GROUP BY 1, 2 ORDER BY 2, 1;
+
+-- 2단계: 누수 카테고리 안에서 GID별 CPD 누수 Top + 쿠폰ID/쿠폰명 분해
+--         (PRODUCT_COUPON vs ORDER_COUPON, COUPON/DISCOUNT/POINT 구성까지)
+SELECT GID, ANY_VALUE(PRODUCT_TITLE) AS product_title,
+  PRODUCT_COUPON_ID, ANY_VALUE(PRODUCT_COUPON_TITLE) AS coupon_title,
+  COUNT(DISTINCT ORDER_ID) AS order_cnt,
+  ROUND(SUM(GMV)/1e6, 2) AS cgmv_mil,
+  ROUND(SUM(CON_MARGIN)/1e6, 2) AS cm_mil,
+  ROUND(SAFE_DIVIDE(SUM(CON_MARGIN), SUM(GMV))*100, 2) AS cmr_pct,
+  ROUND(SUM(CPD_AMOUNT)/1e6, 2) AS cpd_mil,
+  ROUND(SUM(COUPON_PRICE)/1e6, 2) AS coupon_mil,
+  ROUND(SUM(DISCOUNT_PRICE)/1e6, 2) AS discount_mil
+FROM mrtdata.edw_fpna.MART_FPNA_NONAIR_PROFIT_D
+WHERE COUNTRY_NM = '{COUNTRY}' AND FPNA_DOMAIN_NM = 'TNA' AND CITY_NM = '{TARGET_CITY}'
+  AND STANDARD_CATEGORY_LV_2_CD = '{LEAK_CATEGORY}'
+  AND RECENT_STATUS IN ('confirm','finish')
+  AND BASIS_DATE BETWEEN '{PRIOR_START}' AND '{CURRENT_END}'
+GROUP BY GID, PRODUCT_COUPON_ID ORDER BY cpd_mil DESC LIMIT 20
+```
+
+> 쿠폰이 단일 GID·단일 쿠폰ID에 집중되는지, 여러 GID에 깔린 도메인성 할인인지 본다. **누수가 "쿠폰 신설"인지 "수요 폭증 × 고정 할인율"인지 구분**한다(주문수 추이와 CPD/CGMV 비중 추이를 함께 본다). 쿠폰 발급/적용 정책의 의도성은 데이터로 단정하지 말고 쿠폰팀·T&A PM 확인 영역으로 안내한다(`source-logic-boundary.md`).
+
+**AOV shift-share 분해 (단가효과 vs 믹스효과)** (AOV 급변 신호):
+```sql
+-- LV2 카테고리 weight × AOV로 분해: ΔAOV = 단가효과 + 믹스효과 + 상호작용
+WITH cat AS (
+  SELECT
+    CASE WHEN BASIS_DATE BETWEEN '{PRIOR_START}' AND '{PRIOR_END}' THEN 'prior' ELSE 'current' END AS period,
+    STANDARD_CATEGORY_LV_2_CD AS lv2,
+    COUNT(DISTINCT ORDER_ID) AS ord, SUM(GMV) AS gmv
+  FROM mrtdata.edw_fpna.MART_FPNA_NONAIR_PROFIT_D
+  WHERE COUNTRY_NM = '{COUNTRY}' AND FPNA_DOMAIN_NM = 'TNA' AND CITY_NM = '{TARGET_CITY}'
+    AND STANDARD_CATEGORY_LV_1_CD IN ('TOUR','TICKET','ACTIVITY','CLASS','CONVENIENCE','SNAP')
+    AND RECENT_STATUS IN ('confirm','finish')
+    AND ((BASIS_DATE BETWEEN '{PRIOR_START}' AND '{PRIOR_END}') OR (BASIS_DATE BETWEEN '{CURRENT_START}' AND '{CURRENT_END}'))
+  GROUP BY 1, 2
+), p AS (
+  SELECT lv2,
+    SUM(IF(period='prior', ord,0)) AS ord_p, SUM(IF(period='current', ord,0)) AS ord_c,
+    SAFE_DIVIDE(SUM(IF(period='prior', gmv,0)), NULLIF(SUM(IF(period='prior', ord,0)),0)) AS aov_p,
+    SAFE_DIVIDE(SUM(IF(period='current', gmv,0)), NULLIF(SUM(IF(period='current', ord,0)),0)) AS aov_c
+  FROM cat GROUP BY 1
+)
+SELECT lv2,
+  ROUND(SAFE_DIVIDE(ord_p, SUM(ord_p) OVER())*100, 2) AS share_p_pct,
+  ROUND(SAFE_DIVIDE(ord_c, SUM(ord_c) OVER())*100, 2) AS share_c_pct,
+  ROUND(aov_p/1e4, 2) AS aov_p_manwon, ROUND(aov_c/1e4, 2) AS aov_c_manwon,
+  ROUND(SAFE_DIVIDE(ord_p, SUM(ord_p) OVER()) * (aov_c-aov_p)/1e4, 3) AS price_effect_manwon,  -- 단가효과
+  ROUND((SAFE_DIVIDE(ord_c, SUM(ord_c) OVER()) - SAFE_DIVIDE(ord_p, SUM(ord_p) OVER())) * aov_p/1e4, 3) AS mix_effect_manwon  -- 믹스효과
+FROM p ORDER BY (ord_p + ord_c) DESC
+```
+
+> 단가효과가 지배적이면 가격 인상 주도 → CVR 하락·가격저항 리스크를 같이 본다(월별 AOV·1인당 단가 추이에서 둔화 시점, 주문수 반등 여부). `RESVE_PRSNL_CNT`로 1인당 단가(GMV/인원)와 주문당 인원수도 분리한다. 외부 요인(환율 등) 단정은 금지(`external-context-boundary.md`).
+
 #### Phase 2 산출물
 
-- 카테고리별 퍼널 지표 YoY 비교표
+- 카테고리별 퍼널 지표 비교표
 - UTM별 UV/CVR 변화표
+- 체크아웃 퍼널 단계별 이탈표 (CVR 하락 신호 시)
+- GID·쿠폰ID 누수 Top + 쿠폰 구성 분해 (CMR 하락 신호 시)
+- AOV shift-share 분해표 + 단가 인상 Top GID (AOV 급변 신호 시)
 - 취소 TOP 상품 목록 (L3)
-- 문제 원인 특정 ("X 도시 CVR 하락의 Y%는 Z 카테고리의 W 채널에서 발생")
+- 문제 원인 특정 ("X 도시 CMR 하락의 Y%는 Z 카테고리의 W 상품/쿠폰에서 발생")
 
 ---
 
@@ -426,11 +551,15 @@ CPD 1원당 증분 GMV/CM 산출. 도시별 효율 비교.
 
 ---
 
-### 보고서 자동 발행 (Confluence)
+### 보고서 발행 (선택 옵션)
 
-모든 Phase가 완료되면 사용자의 Confluence 개인 스페이스에 종합 보고서를 자동 발행한다.
+기본 동작은 **터미널/채팅 결과로 응답**한다. 자동 발행은 하지 않는다. 사용자가 보고서를 요청하면 형식을 골라 발행한다.
 
-**제목 형식**: `[분석] {국가명} T&A 공헌이익 종합 분석 ({YYYY.MM})`
+- **Confluence**: "컨플루언스에 정리해줘", "문서로 발행해줘" → 아래 구조로 개인 스페이스에 발행. (Slack Data Agent 경로에서는 Confluence 쓰기 차단이므로 발행하지 않고 터미널/권한 환경 안내)
+- **HTML / xlsx / markdown 보고서**: `report-write`로 위임 (`result-export-workflow.md`).
+- 분석 완료 후 후속 옵션에 위 발행 선택지를 제시하고, 사용자가 고를 때만 생성한다.
+
+**Confluence 제목 형식**: `[분석] {국가명/도시명} T&A 공헌이익 종합 분석 ({YYYY.MM})`
 
 **보고서 구조**:
 1. **한눈에 보는 결과** — 문제 4가지의 원인/수치/방향 1줄 요약표
@@ -450,7 +579,7 @@ CPD 1원당 증분 GMV/CM 산출. 도시별 효율 비교.
 - 금액 단위: 1억 이상은 `억` 단위(소수 2자리), 1만 이상은 `만` 단위
 - 비율: 소수 1자리 %
 - 증감 표시: ▲(증가), ▼(감소)
-- 모든 비교는 YoY 기준. 시즌 효과를 제거하기 위해 동일 시즌끼리 비교.
+- 비교 기준은 Phase 0.5에서 사용자와 확정한 축(YoY/MoM/직전피크/CMR 추세)을 따른다. YoY를 쓸 때는 시즌 효과 제거를 위해 동일 시즌끼리 비교한다. YoY 단독으로 "감소"를 단정하지 않는다(YoY는 늘었는데 마진율만 빠지는 케이스 주의).
 - 배치 데이터에서 오늘 날짜 제외. 당일 데이터는 미적재/불완전.
 - BIZ_LOG 대용량 주의: 필요시 기간 분할 실행.
 - 확정 건 기준: `RECENT_STATUS IN ('confirm', 'finish')`. `finish`는 확정 이후 lifecycle이므로 반드시 포함.

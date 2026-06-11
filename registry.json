@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-04-07",
+  "updated_at": "2026-06-12",
   "skills": [
     {
       "name": "code-review",
@@ -23,10 +23,10 @@
       "name": "tna-country-analysis",
       "path": "data-analytics/tna-country-analysis",
       "category": "data-analytics",
-      "description": "국가별 T&A 공헌이익 종합 분석 (퍼널 6단계 × 도시→카테고리→상품 드릴다운 + 광고비 효율/취소 패턴/쿠폰 ROI)",
-      "version": "1.0.0",
+      "description": "국가/도시별 T&A 공헌이익 종합 분석 (비교기준 얼라인 + 공헌이익 드라이버 분해 + 퍼널 6단계 × 도시→카테고리→상품 드릴다운 + 쿠폰 누수 추적/객단가 분해/광고비 효율/취소 패턴)",
+      "version": "1.1.0",
       "author": "doyoung",
-      "tags": ["T&A", "공헌이익", "퍼널분석", "BigQuery", "Confluence", "마케팅효율"]
+      "tags": ["T&A", "공헌이익", "퍼널분석", "드라이버분해", "쿠폰누수", "BigQuery", "마케팅효율"]
     },
     {
       "name": "naver-blog-geo",
