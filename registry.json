@@ -8,7 +8,11 @@
       "description": "PR 코드 리뷰를 보안/성능/가독성 기준으로 도와주는 스킬",
       "version": "1.0.0",
       "author": "doyoung",
-      "tags": ["code-review", "PR", "quality"]
+      "tags": [
+        "code-review",
+        "PR",
+        "quality"
+      ]
     },
     {
       "name": "meeting-notes",
@@ -17,16 +21,30 @@
       "description": "Caret 녹취록 → 요약 → Confluence 자동 작성 → Slack DM 전송",
       "version": "1.0.0",
       "author": "doyoung",
-      "tags": ["meeting", "confluence", "slack", "caret", "자동화"]
+      "tags": [
+        "meeting",
+        "confluence",
+        "slack",
+        "caret",
+        "자동화"
+      ]
     },
     {
       "name": "tna-country-analysis",
       "path": "data-analytics/tna-country-analysis",
       "category": "data-analytics",
       "description": "국가/도시별 T&A 공헌이익 종합 분석 (비교기준 얼라인 + 공헌이익 드라이버 분해 + 퍼널 6단계 × 도시→카테고리→상품 드릴다운 + 쿠폰 누수 추적/객단가 분해/광고비 효율/취소 패턴)",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "author": "doyoung",
-      "tags": ["T&A", "공헌이익", "퍼널분석", "드라이버분해", "쿠폰누수", "BigQuery", "마케팅효율"]
+      "tags": [
+        "T&A",
+        "공헌이익",
+        "퍼널분석",
+        "드라이버분해",
+        "쿠폰누수",
+        "BigQuery",
+        "마케팅효율"
+      ]
     },
     {
       "name": "naver-blog-geo",
@@ -35,7 +53,14 @@
       "description": "GEO/AEO 최적화 네이버 블로그 여행 글 자동 작성. 실시간 후기 리서치 + 무료 이미지 검색 + 상품 링크 자연스럽게 녹이기.",
       "version": "1.0.0",
       "author": "doyoung",
-      "tags": ["naver-blog", "GEO", "AEO", "SEO", "여행", "콘텐츠"]
+      "tags": [
+        "naver-blog",
+        "GEO",
+        "AEO",
+        "SEO",
+        "여행",
+        "콘텐츠"
+      ]
     }
   ]
 }
