@@ -41,7 +41,7 @@
       "name": "blog-content-planner",
       "path": "contents-creating/blog-content-planner",
       "category": "contents-creating",
-      "description": "SEMEA 팀 블로그 신선도 점검 + 주제 제안 + Slack 캔버스 업데이트 + GEO/AEO 최적화 블로그 자동 작성",
+      "description": "SEMEA 팀 블로그 신선도 점검 + 주제 제안 + Slack 캔버스 업데이트 + GEO/AEO 최적화 블로그 자동 작성 + Google Docs 초안 전달 + 작성 이력 관리. audit / write / alert 모드 지원",
       "version": "1.0.0",
       "author": "jiwoo",
       "tags": ["blog", "SEMEA", "naver", "GEO", "content-planning", "slack"]
