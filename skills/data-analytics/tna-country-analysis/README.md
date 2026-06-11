@@ -21,15 +21,18 @@
 
 ### 전제 조건
 
-이 스킬을 사용하려면 아래 3가지가 준비되어 있어야 합니다.
+이 스킬을 사용하려면 아래가 준비되어 있어야 합니다.
 
 | # | 필요한 것 | 왜 필요한가 | 확인 방법 |
 |---|----------|-----------|----------|
 | 1 | **Claude Code** | 스킬을 실행하는 AI 코딩 에이전트 | 터미널에서 `claude` 입력 시 실행되면 OK |
-| 2 | **BigQuery 접근 권한** (gcloud 인증) | 데이터 분석을 위해 BigQuery에 쿼리를 실행 | `bq query --use_legacy_sql=false "SELECT 1"` 실행 시 결과가 나오면 OK |
-| 3 | **Confluence MCP 플러그인** (선택) | 분석 결과를 Confluence 보고서로 발행할 때만 필요 (기본은 화면 결과) | Claude Code에서 `/mcp` 입력 후 Atlassian 항목이 보이면 OK |
+| 2 | **`mrt-dp-dbt-airflow` 레포 클론 + 그 안에서 실행** | 이 스킬은 그 레포의 BQ 안전 wrapper(`.claude/hooks/run-bq-readonly.sh`), 분석 subagent, 매출/지표 규칙, dbt 모델·metric 정의를 사용합니다. 데이터 자체는 클라우드에 있지만, **올바르고 안전하게 분석하려면 이 레포 안에서 실행**해야 합니다 | 터미널에서 `mrt-dp-dbt-airflow` 폴더로 이동한 뒤 `claude` 실행 |
+| 3 | **BigQuery 접근 권한** (gcloud 인증) | 데이터 분석을 위해 BigQuery(`mrtdata`)에 쿼리를 실행 | `bq query --use_legacy_sql=false "SELECT 1"` 실행 시 결과가 나오면 OK |
+| 4 | **Confluence MCP 플러그인** (선택) | 분석 결과를 Confluence 보고서로 발행할 때만 필요 (기본은 화면 결과) | Claude Code에서 `/mcp` 입력 후 Atlassian 항목이 보이면 OK |
 
-> 아직 준비가 안 되어 있다면? Claude Code를 열고 "초기 세팅해줘"라고 말하면 자동으로 설치/인증을 진행합니다.
+> ⚠️ **반드시 `mrt-dp-dbt-airflow` 폴더 안에서 실행하세요.** 이 스킬은 그 레포의 분석 도구·규칙·dbt 정의를 전제로 만들어졌습니다. 다른 폴더에서 실행하면 안전 wrapper·분석 subagent·매출/지표 규칙이 빠져서 정확도와 안전장치가 떨어집니다. (BigQuery 데이터 접근 자체는 gcloud 인증만 되면 어느 폴더든 가능하지만, 스킬의 분석 로직은 이 레포에 의존합니다.)
+
+> 아직 준비가 안 되어 있다면? `mrt-dp-dbt-airflow` 폴더에서 Claude Code를 열고 "초기 세팅해줘"라고 말하면 자동으로 설치/인증을 진행합니다.
 
 ### 설치 방법
 
@@ -52,7 +55,7 @@ curl -fsSL https://raw.githubusercontent.com/doyounglee-myrealtrip/mrt-SEMEA-ski
 
 ### 설치 확인
 
-Claude Code를 열고 아래처럼 입력하면 스킬이 동작합니다:
+`mrt-dp-dbt-airflow` 폴더 안에서 Claude Code를 열고 아래처럼 입력하면 스킬이 동작합니다:
 
 ```
 /tna-country-analysis 스페인
@@ -293,6 +296,9 @@ Level 1: 도시              "Barcelona에서 문제가 있다"
 ### Q: 특정 도시만 분석하고 싶으면?
 도시명을 직접 입력하면 됩니다: `/tna-country-analysis Barcelona`, `/tna-country-analysis 리스본`. 해당 도시만 심층 분석합니다.
 
+### Q: 꼭 `mrt-dp-dbt-airflow` 폴더 안에서 실행해야 하나요?
+네. 이 스킬은 그 레포의 BQ 안전 wrapper, 분석 subagent, 매출/지표 규칙, dbt 모델·metric 정의를 사용합니다. BigQuery 데이터 자체는 gcloud 인증만 되면 어느 폴더에서도 조회되지만, 스킬의 분석 로직·안전장치는 이 레포에 들어 있어서 다른 폴더에서 실행하면 정확도와 안전장치가 떨어집니다. `mrt-skill install`로 스킬을 설치하면 명령어는 어디서든 뜨지만, 실제 실행은 `mrt-dp-dbt-airflow` 폴더 안에서 하세요.
+
 ### Q: 광고비 데이터가 해당 국가에 없으면?
 `mkt_dashboard_raw_data`에 국가 필터가 없는 경우 T&A 전체 기준으로 분석하되, 스페인 한정이 아님을 보고서에 명시합니다.
 
@@ -308,5 +314,6 @@ Level 1: 도시              "Barcelona에서 문제가 있다"
 
 | 버전 | 날짜 | 변경 내용 |
 |------|------|----------|
+| 1.1.1 | 2026-06-12 | 문서 보완 — 전제 조건에 "`mrt-dp-dbt-airflow` 레포 안에서 실행" 요건 명시(스킬이 그 레포의 BQ wrapper·분석 subagent·규칙·dbt 정의에 의존). 실행 위치 관련 FAQ 추가. |
 | 1.1.0 | 2026-06-12 | 분석 전 비교기준 얼라인(작년대비/직전월/마진율 추세) 추가, 공헌이익 드라이버 분해(주문×객단가×확정률×마진율) 추가, 쿠폰 누수 상품·쿠폰ID 단위 추적과 객단가 단가/믹스 분해 추가, Confluence 자동발행→선택 옵션화. (Barcelona 분석 사례 기반) |
 | 1.0.0 | 2026-04-02 | 최초 생성. 스페인 T&A 분석 사례 기반으로 스킬화. |
