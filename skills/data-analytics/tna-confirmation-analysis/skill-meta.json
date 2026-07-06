@@ -1,0 +1,23 @@
+{
+  "version": "1.0.0",
+  "author": "doyoung",
+  "category": "data-analytics",
+  "tags": [
+    "T&A",
+    "확정률",
+    "CFR",
+    "취소분석",
+    "환불",
+    "rate-mix분해",
+    "취소사유",
+    "BigQuery"
+  ],
+  "description": "T&A 확정률(CFR=CGMV/GMV)·취소 문제를 진단하는 정본 스킬. 구조 브레이크 탐지(월별+주차 WoW) → MoM×YoY 삼각검증 → 드라이버 분해 → rate/mix 분리 → 지역·카테고리·상품 범인 좁히기 → 실제 취소 사유(CANCEL_REASON) 읽기 → 통제 가능/불가 구분까지 순서대로 규명",
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-05",
+      "changes": "최초 배포. 확정률 진단 반복 실수 4가지(여행월 필터·사유 추정·YoY 단독 귀속·얕은 전지역 스캔) 교정을 위한 7-STEP 정본 방법론과 쿼리 템플릿. tna-mbor-draft·tna-country-analysis가 확정률 이슈 시 참조. 2026-06 손익 개편(CONFIRM_KST_DATE/REFUND_DATE 분리 귀속, REFUND_* 양수 차감) 기준 반영."
+    }
+  ]
+}
