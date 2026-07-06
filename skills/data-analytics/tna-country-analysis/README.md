@@ -271,9 +271,15 @@ Level 1: 도시              "Barcelona에서 문제가 있다"
 
 | 데이터 | 테이블 | 용도 |
 |--------|--------|------|
-| 주문/GMV/공헌이익/CFR/CPD | `edw_fpna.MART_FPNA_NONAIR_PROFIT_D` | 퍼널 ③④⑤⑥ |
+| 주문/GMV/공헌이익(CM)/CFR/CPD | `edw_fpna.MART_FPNA_NONAIR_PROFIT_D` | 퍼널 ③④⑤⑥ |
 | 상품 상세 UV/CVR | `edw_mart.MART_BIZ_LOG_PID_CONVERSION_D` + `MART_PRODUCT_D` | 퍼널 ①② |
 | 광고비/ROAS | `business.mkt_dashboard_raw_data` | 채널 효율 분석 |
+
+> ⚠️ **손익 집계 기준 (2026-06 개편 반영).** 2026-06-23 배포로 비항공 손익 집계 기준이 바뀌었습니다([FP&A 안내](https://myrealtrip.atlassian.net/wiki/spaces/NBDDIV/pages/5935038476)). 이 스킬의 모든 손익 수치는 아래 기준을 따릅니다:
+> - **컬럼명 변경**: `CON_MARGIN → CM`, `NET_PRICE → COGS`
+> - **환불 전용 컬럼 신설**: `REFUND_DATE`, `REFUND_GMV`, `REFUND_CM`, `REFUND_COGS`, `REFUND_REVENUE` (모두 **양수로 저장되는 차감액** → net은 `GMV − REFUND_GMV`, `CM − REFUND_CM`로 뺌)
+> - **귀속 관점을 먼저 정함**: (A) 월별 FP&A 실적 = 확정월(`CONFIRM_KST_DATE`) + 환불월(`REFUND_DATE`) 분리 귀속 / (B) 예약·상품·프로모션 최종성과 = 환불을 원 예약 행에 붙여 net
+> - 개편 전 `RECENT_STATUS IN ('confirm','finish')` + `BASIS_DATE` 확정 집계 방식은 **폐기**
 
 ---
 
@@ -314,6 +320,7 @@ Level 1: 도시              "Barcelona에서 문제가 있다"
 
 | 버전 | 날짜 | 변경 내용 |
 |------|------|----------|
+| 1.2.0 | 2026-07-05 | **2026-06 손익 개편 반영** — 「손익 집계 기준」 섹션 신규 추가. 컬럼명 변경(`CON_MARGIN→CM`, `NET_PRICE→COGS`), 환불 전용 컬럼(`REFUND_*`) 신설 및 부호(양수 차감액) 검증 반영, 월별 실적(확정월+환불월 분리 귀속, 패턴 A)과 예약/상품/프로모션 최종성과(환불을 원 행에 붙여 net, 패턴 B) 관점 분리, `RECENT_STATUS`+`BASIS_DATE` 구 방식 폐기. 전 Phase 쿼리를 신 기준으로 교체. (Lisbon 분석 사례 기반) |
 | 1.1.1 | 2026-06-12 | 문서 보완 — 전제 조건에 "`mrt-dp-dbt-airflow` 레포 안에서 실행" 요건 명시(스킬이 그 레포의 BQ wrapper·분석 subagent·규칙·dbt 정의에 의존). 실행 위치 관련 FAQ 추가. |
 | 1.1.0 | 2026-06-12 | 분석 전 비교기준 얼라인(작년대비/직전월/마진율 추세) 추가, 공헌이익 드라이버 분해(주문×객단가×확정률×마진율) 추가, 쿠폰 누수 상품·쿠폰ID 단위 추적과 객단가 단가/믹스 분해 추가, Confluence 자동발행→선택 옵션화. (Barcelona 분석 사례 기반) |
 | 1.0.0 | 2026-04-02 | 최초 생성. 스페인 T&A 분석 사례 기반으로 스킬화. |
